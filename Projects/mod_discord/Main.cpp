@@ -10,7 +10,13 @@
 // The modules internal name (Also used for the namespace name)
 MODULE_MAIN("discord");
 
+// -------------------------------------------------------------------------
+
+// Needed because Module SDK does not have a way to trigger an event, so we need to grab the "triggerEvent" function from the scripting interface.
+// Scripts will need to call module.discord.getTriggerEvent(triggerEvent) to hand the triggerEvent function over to this module so it can be used.
 Galactic3D::Strong<Galactic3D::Interfaces::IFunction> g_TriggerEventFunction;
+
+// -------------------------------------------------------------------------
 
 SDK::Class g_ConnectionClass;
 SDK::Class g_UserClass;
@@ -18,6 +24,8 @@ SDK::Class g_GuildMemberClass;
 SDK::Class g_SlashCommandClass;
 SDK::Class g_SlashCommandOptionClass;
 SDK::Class g_ReceivedSlashCommandClass;
+
+// -------------------------------------------------------------------------
 
 class CDiscordConnection
 {
@@ -31,6 +39,8 @@ public:
 	}
 };
 
+// -------------------------------------------------------------------------
+
 class CDiscordGuildMember
 {
 public:
@@ -41,6 +51,8 @@ public:
 	}
 };
 
+// -------------------------------------------------------------------------
+
 class CDiscordReceivedSlashCommand
 {
 public:
@@ -50,6 +62,8 @@ public:
 		m_pSlashCommand = pSlashCommand;
 	}
 };
+
+// -------------------------------------------------------------------------
 
 void ModuleRegister()
 {
