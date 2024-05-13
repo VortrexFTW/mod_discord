@@ -31,11 +31,9 @@ class CDiscordConnection
 {
 public:
 	const char* m_szToken;
-	dpp::cluster m_pBot;
 
-	// Add a constructor with a dpp::cluster object while dpp::cluster does not have an appropriate default constructor available
-	CDiscordConnection((dpp::cluster)pBot) {
-		m_pBot = pBot;
+	// Create constructor and assign the cluster
+	CDiscordConnection() {
 	}
 };
 
@@ -87,9 +85,6 @@ void ModuleRegister()
 
 		dpp::cluster pBot(szToken);
 
-		//command_handler(&pBot);
-		//g_pBotCommandHandler = command_handler;
-
 		pBot.on_log(dpp::utility::cout_logger());
 
 		pBot.on_slashcommand([](const dpp::slashcommand_t& event) {
@@ -116,10 +111,57 @@ void ModuleRegister()
 			if (dpp::run_once<struct register_bot_commands>()) {
 				//bot.global_command_create(dpp::slashcommand("ping", "Ping pong!", bot.me.id));
 			}
+
+			SDK::ArrayValue Args;
+
+			SDK::StringValue Name("OnDiscordReady");
+			Args.Insert(Name);
+
+			GALACTIC_CALL(g_TriggerEventFunction->Call(Args.m_pArray));
 		});
 
+		// Make an event for when a member joins a voice channel
+		pBot.on_voice_state_update([](const dpp::voice_state_update_t& event) {
+			if (event.state.channel_id != 0) {
+				//std::cout << "User " << event.user_id << " joined voice channel " << event.state.channel_id << std::endl;
+				SDK::ArrayValue Args;
+
+				SDK::StringValue Name("OnDiscordMemberJoinVoice");
+				Args.Insert(Name);
+
+				SDK::StringValue UserId(event.state.user_id.str().c_str());
+				Args.Insert(UserId);
+
+				SDK::StringValue ChannelId(event.state.channel_id.str().c_str());
+				Args.Insert(ChannelId);
+
+				GALACTIC_CALL(g_TriggerEventFunction->Call(Args.m_pArray));
+			}
+		});
+
+		// Make an event for when a member leaves a voice channel
+		pBot.on_voice_state_update([](const dpp::voice_state_update_t& event) {
+			if (event.state.channel_id == 0) {
+				//std::cout << "User " << event.user_id << " joined voice channel " << event.state.channel_id << std::endl;
+				SDK::ArrayValue Args;
+
+				SDK::StringValue Name("OnDiscordMemberLeaveVoice");
+				Args.Insert(Name);
+
+				SDK::StringValue UserId(event.state.user_id.str().c_str());
+				Args.Insert(UserId);
+
+				SDK::StringValue ChannelId(event.state.channel_id.str().c_str());
+				Args.Insert(ChannelId);
+
+				GALACTIC_CALL(g_TriggerEventFunction->Call(Args.m_pArray));
+			}
+		});
+
+		pBot.start(dpp::st_wait);
+
 		// Return the CConnection object
-		SDK::ClassValue<CDiscordConnection, g_ConnectionClass> Connection(new CDiscordConnection(pBot));
+		SDK::ClassValue<CDiscordConnection, g_ConnectionClass> Connection(new CDiscordConnection());
 		State.Return(Connection);
 		return true;
 
@@ -247,6 +289,48 @@ void ModuleRegister()
 
 		SDK::NumberValue Value((uint64_t)pGuildMember.user_id);
 		State.Return(Value);
+
+		return true;
+
+		SDK_ENDTRY;
+	});
+
+	g_GuildMemberClass.RegisterFunction("setMute", [](Galactic3D::Interfaces::INativeState* pState, int32_t argc, void* pUser) {
+		SDK_TRY;
+
+		SDK::State State(pState);
+
+		auto pThis = State.CheckThis<CDiscordGuildMember, g_GuildMemberClass>();
+		dpp::guild_member pGuildMember = pThis->m_pGuildMember;
+		//if (pGuildMember == nullptr)
+		//	return pState->SetError("Guild member is invalid!");
+
+		bool bMuteState;
+		State.CheckBoolean(0, bMuteState);
+
+		// Mute/unmute the user in discord voice channel
+		pGuildMember.set_mute(bMuteState);
+
+		return true;
+
+		SDK_ENDTRY;
+	});
+
+	g_GuildMemberClass.RegisterFunction("setDeaf", [](Galactic3D::Interfaces::INativeState* pState, int32_t argc, void* pUser) {
+		SDK_TRY;
+
+		SDK::State State(pState);
+
+		auto pThis = State.CheckThis<CDiscordGuildMember, g_GuildMemberClass>();
+		dpp::guild_member pGuildMember = pThis->m_pGuildMember;
+		//if (pGuildMember == nullptr)
+		//	return pState->SetError("Guild member is invalid!");
+
+		bool bDeafState;
+		State.CheckBoolean(0, bDeafState);
+
+		// Mute/unmute the user in discord voice channel
+		pGuildMember.set_deaf(bDeafState);
 
 		return true;
 
