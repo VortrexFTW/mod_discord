@@ -20,10 +20,12 @@ Galactic3D::Strong<Galactic3D::Interfaces::IFunction> g_TriggerEventFunction;
 
 SDK::Class g_ConnectionClass;
 SDK::Class g_UserClass;
+SDK::Class g_GuildClass;
 SDK::Class g_GuildMemberClass;
 SDK::Class g_SlashCommandClass;
 SDK::Class g_SlashCommandOptionClass;
 SDK::Class g_ReceivedSlashCommandClass;
+SDK::Class g_MessageClass;
 
 // -------------------------------------------------------------------------
 
@@ -34,6 +36,18 @@ public:
 
 	// Create constructor and assign the cluster
 	CDiscordConnection() {
+	}
+};
+
+// -------------------------------------------------------------------------
+
+class CDiscordGuild
+{
+public:
+	dpp::guild m_pGuild;
+
+	CDiscordGuild(dpp::guild pGuild) {
+		m_pGuild = pGuild;
 	}
 };
 
@@ -63,14 +77,28 @@ public:
 
 // -------------------------------------------------------------------------
 
+class CDiscordMessage
+{
+public:
+	dpp::message m_pMessage;
+
+	CDiscordMessage(dpp::message pMessage) {
+		m_pMessage = pMessage;
+	}
+};
+
+// -------------------------------------------------------------------------
+
 void ModuleRegister()
 {
 	g_ConnectionClass = SDK::Class("DiscordConnection");
+	g_GuildClass = SDK::Class("DiscordGuild");
 	g_UserClass = SDK::Class("DiscordUser");
 	g_GuildMemberClass = SDK::Class("DiscordGuildMember");
 	g_SlashCommandClass = SDK::Class("DiscordSlashCommand");
 	g_SlashCommandOptionClass = SDK::Class("DiscordSlashCommandOption");
 	g_ReceivedSlashCommandClass = SDK::Class("DiscordReceivedSlashCommand");
+	g_MessageClass = SDK::Class("DiscordMessage");
 
 	SDK::RegisterFunction("init", [](Galactic3D::Interfaces::INativeState* pState, int32_t argc, void* pUser) {
 		SDK_TRY;
