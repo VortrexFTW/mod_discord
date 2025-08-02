@@ -4,8 +4,8 @@ file(GLOB_RECURSE SOURCES *.cpp *.h)
 
 new_library_shared(mod_discord "${SOURCES}" "")
 
-target_include_directories(mod_discord PRIVATE "../DPP/include/dpp-10.0/dpp")
-target_link_directories(mod_discord PRIVATE "../DPP/lib/dpp-10.0")
+target_include_directories(mod_discord PRIVATE "../dpp/include/dpp")
+#target_link_directories(mod_discord PRIVATE "../dpp/lib/dpp")
 
 if(WIN32)
 target_link_libraries(mod_discord libdpp)
